@@ -65,6 +65,14 @@
         :class="minToTrayOnClose ? 'is-active' : 'is-inactive'"
       ></div>
     </div>
+    <div class="Setting-wrapper">
+      <p class="Setting-title">Use shortcut to toggle Window</p>
+      <div
+        class="Checkbox"
+        @click="selectUseShortcut"
+        :class="useShortcut ? 'is-active' : 'is-inactive'"
+      ></div>
+    </div>
   </div>
 </template>
 
@@ -93,6 +101,10 @@ export default {
 
     minToTrayOnClose() {
       return this.$store.getters.minToTrayOnClose
+    },
+
+    useShortcut() {
+      return this.$store.getters.useShortcut
     },
 
     notifications() {
@@ -156,6 +168,16 @@ export default {
         key: 'minToTrayOnClose',
         val: !this.minToTrayOnClose
       }
+      this.$store.dispatch('setSetting', payload)
+      this.$store.dispatch('setViewState', payload)
+    },
+
+    selectUseShortcut(event) {
+      const payload = {
+        key: 'useShortcut',
+        val: !this.useShortcut
+      }
+      ipcRenderer.send('toggle-shortcut', payload.val)
       this.$store.dispatch('setSetting', payload)
       this.$store.dispatch('setViewState', payload)
     },

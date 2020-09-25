@@ -2,7 +2,7 @@
 
 import { logger } from './../renderer/utils/logger'
 import { createLocalStore } from './../renderer/utils/LocalStore'
-import { app, BrowserWindow, ipcMain, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, Tray, nativeImage } from 'electron'
 
 const electron = require('electron')
 const path = require('path')
@@ -27,10 +27,13 @@ app.on('ready', () => {
   createWindow()
   const minToTray = localStore.get('minToTray')
   const alwaysOnTop = localStore.get('alwaysOnTop')
+  const useShortcut = localStore.get('useShortcut')
 
   if (minToTray) {
     createTray()
   }
+
+  toggleShortcut(useShortcut)
 
   // this must be set after window has been created on ubuntu 18.04
   mainWindow.setAlwaysOnTop(alwaysOnTop)
@@ -54,6 +57,10 @@ app.on('activate', () => {
 
 ipcMain.on('toggle-alwaysOnTop', (event, arg) => {
   mainWindow.setAlwaysOnTop(arg)
+})
+
+ipcMain.on('toggle-shortcut', (event, arg) => {
+  toggleShortcut(arg)
 })
 
 ipcMain.on('toggle-minToTray', (event, arg) => {
@@ -99,6 +106,17 @@ function getNewWindowPosition() {
   }
 
   return { x: x, y: y }
+}
+
+function toggleShortcut(useShortcut) {
+  if (useShortcut) {
+    const shortcut = globalShortcut.register('CommandOrControl+P', () => toggleWindow())
+    if (!shortcut) {
+      logger.warn('shortcut not registered')
+    }
+  } else {
+    globalShortcut.unregister('CommandOrControl+P')
+  }
 }
 
 function toggleWindow() {
